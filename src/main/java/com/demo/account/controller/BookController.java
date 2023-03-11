@@ -21,7 +21,7 @@ public class BookController {
      * @param uid
      * @param bookKeepingName
      * @return  List<String> 表示支出款项类型的列表
-     * 功能：在”记一笔”支出页面中可以根据账本的类型渲染出对应的款项类型
+     * 功能：在”记一笔”支出页面中可以根据账本的类型渲染出对应的款项类型1
      */
     @RequestMapping(method = RequestMethod.GET,value = "/out")
     List<String> getExpenditureType(int uid,String bookKeepingName,String bookKeepingTypeName){
