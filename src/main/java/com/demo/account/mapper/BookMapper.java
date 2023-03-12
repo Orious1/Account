@@ -2,6 +2,7 @@ package com.demo.account.mapper;
 
 import com.demo.account.entity.BookKeeping;
 import com.demo.account.entity.CustomFund;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -23,4 +24,9 @@ public interface BookMapper {
 
     @Select("SELECT * FROM customed_funds WHERE uid=#{uid} AND bookkeeping_type_id=#{bookkeepingTypeId}")
     List<CustomFund> selectCustomFund(int uid,int bookkeepingTypeId);
+
+    //在customed_funds表中插入一条记录
+    @Insert("INSERT INTO customed_funds(customed_fund_id,uid,customed_fund_name,bookkeeping_type_id)\n" +
+            "VALUES(CONCAT(#{type},replace(uuid(), _utf8'-', _utf8'')),#{uid},#{customedFundName},#{bookKeepingTypeId});")
+    int insertCFund(String type,int uid,String customedFundName,int bookKeepingTypeId);
 }

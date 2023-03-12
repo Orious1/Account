@@ -32,4 +32,9 @@ public class TestController {
         System.out.println(Arrays.toString(split));
         return l;
     }
+
+    @RequestMapping("/2")
+    public int test1(){
+        return bookMapper.insertCFund("CO",1,"你好",1);
+    }
 }
