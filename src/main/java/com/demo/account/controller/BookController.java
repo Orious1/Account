@@ -1,7 +1,7 @@
 package com.demo.account.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.demo.account.entity.BasicFund;
 import com.demo.account.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,9 +21,9 @@ public class BookController {
     }
 
     /**
-     * @param uid
-     * @param bookKeepingName
-     * @param bookKeepingTypeName
+     * @param uid 用户id
+     * @param bookKeepingName 账本名
+     * @param bookKeepingTypeName 账本对应的模板名称
      * @return  List<String> 表示支出款项类型的列表
      * 功能：在”记一笔”支出页面中可以根据账本的类型渲染出对应的款项类型
      */
@@ -33,9 +33,9 @@ public class BookController {
     }
 
     /**
-     * @param uid
-     * @param bookKeepingName
-     * @param bookKeepingTypeName
+     * @param uid 用户id
+     * @param bookKeepingName 账本名
+     * @param bookKeepingTypeName 账本对应的模板名称
      * @return List<String> 表示收入款项类型的列表
      *功能：在”记一笔”收入页面中可以根据账本的类型渲染出对应的款项类型
      */
@@ -44,14 +44,40 @@ public class BookController {
         return bookService.getIncomeType(uid,bookKeepingName,bookKeepingTypeName);
     }
 
+    /**
+     *
+     * @param uid 用户id
+     * @param bookKeepingName 账本名
+     * @param bookKeepingTypeName 账本对应的模板名称
+     * @param json 支出款项的json数据
+     * @return "success"
+     * 功能：修改账本模板的支出项目,用于”记一笔”支出的设置页面
+     */
     @RequestMapping(method = RequestMethod.POST,value = "/setting_add_out")
-    String outSettingAdd(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
-        return bookService.outSettingAdd(uid, bookKeepingName, bookKeepingTypeName, json);
+    String outSettingChange(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
+        return bookService.outSettingChange(uid, bookKeepingName, bookKeepingTypeName, json);
     }
 
+    /**
+     *
+     * @param uid 用户id
+     * @param bookKeepingName 账本名
+     * @param bookKeepingTypeName 账本对应的模板名称
+     * @param json 收入款项的json数据
+     * @return "success"
+     * 功能：修改账本模板的收入项目,用于”记一笔”收入的设置页面
+     */
     @RequestMapping(method = RequestMethod.POST,value = "/setting_add_in")
-    String inSettingAdd(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
-        return bookService.inSettingAdd(uid, bookKeepingName, bookKeepingTypeName, json);
+    String inSettingChange(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
+        return bookService.inSettingChange(uid, bookKeepingName, bookKeepingTypeName, json);
     }
 
+    /**
+     *
+     * @return 基本款项表，用于名称和编号的对照
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/basic")
+    List<BasicFund> getAll(){
+        return bookService.selectAllBasicFund();
+    }
 }

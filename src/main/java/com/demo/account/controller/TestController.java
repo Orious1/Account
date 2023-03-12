@@ -3,6 +3,7 @@ package com.demo.account.controller;
 import com.demo.account.entity.BookKeeping;
 import com.demo.account.mapper.BookMapper;
 import com.demo.account.mapper.UserMapper;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +36,11 @@ public class TestController {
 
     @RequestMapping("/2")
     public int test1(){
-        return bookMapper.insertCFund("CO",1,"你好",1);
+        String a="BO1-BO2-B03-BI1-BI2-BI3";
+        String b=a.substring(a.indexOf("BI"));
+        String c=a.substring(0,a.indexOf("BI")-1);
+        System.out.println(b);
+        System.out.println(c);
+        return 1;
     }
 }

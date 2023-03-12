@@ -1,9 +1,11 @@
 package com.demo.account.mapper;
 
+import com.demo.account.entity.BasicFund;
 import com.demo.account.entity.BookKeeping;
 import com.demo.account.entity.CustomFund;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -29,4 +31,10 @@ public interface BookMapper {
     @Insert("INSERT INTO customed_funds(customed_fund_id,uid,customed_fund_name,bookkeeping_type_id)\n" +
             "VALUES(CONCAT(#{type},replace(uuid(), _utf8'-', _utf8'')),#{uid},#{customedFundName},#{bookKeepingTypeId});")
     int insertCFund(String type,int uid,String customedFundName,int bookKeepingTypeId);
+
+    @Update("UPDATE bookkeeping_tpye SET bookkeeping_type_funds_id=#{bookkeepingTypeFundsId} WHERE bookkeeping_type_id=#{bookKeepingTypeId};")
+    int updateBookKeepingTypeList(String bookkeepingTypeFundsId, int bookKeepingTypeId);
+
+    @Select("SELECT * FROM basic_funds")
+    List<BasicFund> selectAllBasicFunds();
 }
