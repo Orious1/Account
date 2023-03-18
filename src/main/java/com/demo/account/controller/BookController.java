@@ -3,12 +3,15 @@ package com.demo.account.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.BasicFund;
 import com.demo.account.service.BookService;
+import com.demo.account.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -28,7 +31,7 @@ public class BookController {
      * 功能：在”记一笔”支出页面中可以根据账本的类型渲染出对应的款项类型
      */
     @RequestMapping(method = RequestMethod.GET,value = "/out")
-    List<String> getExpenditureType(int uid,String bookKeepingName,String bookKeepingTypeName){
+    HashMap<String,String> getExpenditureType(int uid, String bookKeepingName, String bookKeepingTypeName){
         return bookService.getExpenditureType(uid,bookKeepingName,bookKeepingTypeName);
     }
 
@@ -40,7 +43,7 @@ public class BookController {
      *功能：在”记一笔”收入页面中可以根据账本的类型渲染出对应的款项类型
      */
     @RequestMapping(method = RequestMethod.GET,value = "/in")
-    List<String> getIncomeType(int uid,String bookKeepingName,String bookKeepingTypeName){
+    HashMap<String,String> getIncomeType(int uid,String bookKeepingName,String bookKeepingTypeName){
         return bookService.getIncomeType(uid,bookKeepingName,bookKeepingTypeName);
     }
 
@@ -79,5 +82,29 @@ public class BookController {
     @RequestMapping(method = RequestMethod.GET,value = "/basic")
     List<BasicFund> getAll(){
         return bookService.selectAllBasicFund();
+    }
+
+    /**
+     *
+     * @return "success"
+     * 功能：添加一笔支出
+     */
+    @RequestMapping(method = RequestMethod.POST,value = "/out")
+    String bookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, String time,
+                              String fundId,String customedFundId,String comment,String enclosure){
+        Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
+        return bookService.bookkeepingPayment(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
+    }
+
+    /**
+     *
+     * @return "success"
+     * 功能：添加一笔收入
+     */
+    @RequestMapping(method = RequestMethod.POST,value = "/in")
+    String bookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, String time,
+                              String fundId,String customedFundId,String comment,String enclosure){
+        Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
+        return bookService.bookkeepingIncome(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
     }
 }

@@ -4,10 +4,14 @@ import com.demo.account.entity.BasicFund;
 import com.demo.account.entity.BookKeeping;
 import com.demo.account.entity.CustomFund;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.mapping.StatementType;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 public interface BookMapper {
 
@@ -37,4 +41,21 @@ public interface BookMapper {
 
     @Select("SELECT * FROM basic_funds")
     List<BasicFund> selectAllBasicFunds();
+
+    @Select("CALL find_bookkeeping_type_id(#{uid},#{bookKeepingName},#{bookkeepingTypeName})")
+    @Options(statementType = StatementType.CALLABLE)
+    Integer findBookKeepingTypeIdInConditions(int uid, String bookKeepingName, String bookkeepingTypeName);
+
+    @Insert("INSERT INTO payment(uid,bookkeeping_id,account_id,amount,time,fund_id,customed_fund_id,comment,enclosure)\n" +
+            "VALUES(#{uid},#{bookKeepingId},#{accountId},#{amount},#{time},#{fundId},#{customedFundId},#{comment},#{enclosure});")
+    int insertIntoPayment(int uid, int bookKeepingId, int accountId, String amount, Timestamp time,
+                          String fundId,String customedFundId,String comment,String enclosure);
+
+    @Insert("INSERT INTO income(uid,bookkeeping_id,account_id,amount,time,fund_id,customed_fund_id,comment,enclosure)\n" +
+            "VALUES(#{uid},#{bookKeepingId},#{accountId},#{amount},#{time},#{fundId},#{customedFundId},#{comment},#{enclosure});")
+    int insertIntoIncome(int uid, int bookKeepingId, int accountId, String amount, Timestamp time,
+                          String fundId,String customedFundId,String comment,String enclosure);
+
+    @Select("SELECT bookkeeping_id FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName} AND bookkeeping_type_id=#{bookKeepingTypeId} ")
+    int findBookKeepingId(int uid,String bookKeepingName,int bookKeepingTypeId);
 }

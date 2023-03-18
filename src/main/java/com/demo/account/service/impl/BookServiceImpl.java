@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 @Transactional
@@ -26,14 +25,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<String> getExpenditureType(int uid, String bookKeepingName,String bookKeepingTypeName) {
-        List<String> l=getPaymentType(uid,bookKeepingName,"O",bookKeepingTypeName);
+    public HashMap<String,String> getExpenditureType(int uid, String bookKeepingName,String bookKeepingTypeName) {
+        HashMap<String,String> l=getPaymentType(uid,bookKeepingName,"O",bookKeepingTypeName);
         return l;
     }
 
     @Override
-    public List<String> getIncomeType(int uid, String bookKeepingName,String bookKeepingTypeName) {
-        List<String> l=getPaymentType(uid,bookKeepingName,"I",bookKeepingTypeName);
+    public HashMap<String,String> getIncomeType(int uid, String bookKeepingName,String bookKeepingTypeName) {
+        HashMap<String,String> l=getPaymentType(uid,bookKeepingName,"I",bookKeepingTypeName);
         return l;
     }
 
@@ -102,9 +101,27 @@ public class BookServiceImpl implements BookService {
         return "success";
     }
 
-    private List<String> getPaymentType(int uid, String bookKeepingName, String type, String bookKeepingTypeName){
+    @Override
+    public String bookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName,int accountId, String amount, Timestamp time,
+                                     String fundId, String customedFundId, String comment, String enclosure)
+    {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        bookMapper.insertIntoPayment(uid, bookKeepingId, accountId, amount, time, fundId, customedFundId, comment, enclosure);
+        return "success";
+    }
+
+    @Override
+    public String bookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, Timestamp time, String fundId, String customedFundId, String comment, String enclosure) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        bookMapper.insertIntoIncome(uid, bookKeepingId, accountId, amount, time, fundId, customedFundId, comment, enclosure);
+        return "success";
+    }
+
+    private HashMap<String,String> getPaymentType(int uid, String bookKeepingName, String type, String bookKeepingTypeName){
         List<BookKeeping> bookKeeping=bookMapper.selectByUidAndName(uid,bookKeepingName);
-        List<String> l=new ArrayList<>();
+        HashMap<String,String> l=new HashMap<>();
         for (BookKeeping i: bookKeeping){
             String temp=bookMapper.selectBookkeepingTypeName(i.getBookkeeping_type_id());
             // 找到对应的模板类型的处理
@@ -114,7 +131,7 @@ public class BookServiceImpl implements BookService {
                 for (String j: split){
                     //通过type 判断是支出还是收入 O为支出 I为收入
                     if (j.contains(type)){
-                        l.add(bookMapper.selectBasicFundName(j));
+                        l.put(j,bookMapper.selectBasicFundName(j));
                     }
                 }
                 // 从用户自定义款项中找是否存在，存在加入，不存在不做处理
@@ -122,7 +139,7 @@ public class BookServiceImpl implements BookService {
                 if (lcf!=null && !lcf.isEmpty()){
                     for (CustomFund j:lcf){
                         if (j.getCustomed_fund_id().contains(type)){
-                            l.add(j.getCustomed_fund_name());
+                            l.put(j.getCustomed_fund_id(),j.getCustomed_fund_name());
                         }
                     }
                 }
