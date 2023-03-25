@@ -107,4 +107,35 @@ public class BookController {
         Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
         return bookService.bookkeepingIncome(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
     }
+
+    /**
+     *功能：添加一个账本
+     */
+    @RequestMapping(method = RequestMethod.POST,value = "/new")
+    String bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,String bookkeepingCreateDate,
+                          String bookkeepingEndDate,Integer extraMember1,Integer extraMember2,
+                          String template,String bookKeepingTypeName){
+        Timestamp t1=DateUtils.strToSqlDate(bookkeepingCreateDate,"yyyy-MM-dd HH:mm:ss");
+        Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
+        return bookService.bookkeepingAdd(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, t1, t2, extraMember1, extraMember2,template,bookKeepingTypeName);
+    }
+
+    /**
+     *功能：修改账本设置
+     */
+    @RequestMapping(method = RequestMethod.PUT,value = "/change")
+    String bookkeepingChange(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,String bookkeepingCreateDate,
+                             String bookkeepingEndDate,Integer extraMember1,Integer extraMember2){
+        Timestamp t1=DateUtils.strToSqlDate(bookkeepingCreateDate,"yyyy-MM-dd HH:mm:ss");
+        Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
+        return bookService.bookkeepingChange(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,t1,t2,extraMember1,extraMember2);
+    }
+
+    /**
+     *功能：获取账本对应模板的名字
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/getTypeNames")
+    List<String> bookkeepingTypeNamesFind(int uid,String bookKeepingName){
+        return  bookService.bookkeepingTypeNamesFind(uid,bookKeepingName);
+    }
 }

@@ -24,4 +24,12 @@ public interface BookService {
 
     String bookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, Timestamp time,
                              String fundId,String customedFundId,String comment,String enclosure);
+
+    String bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,Timestamp bookkeepingCreateDate,
+                          Timestamp bookkeepingEndDate,Integer extraMember1,Integer extraMember2,String template,String bookKeepingTypeName);
+
+    String bookkeepingChange(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,Timestamp bookkeepingCreateDate,
+                             Timestamp bookkeepingEndDate,Integer extraMember1,Integer extraMember2);
+
+    List<String> bookkeepingTypeNamesFind(int uid ,String bookKeepingName);
 }

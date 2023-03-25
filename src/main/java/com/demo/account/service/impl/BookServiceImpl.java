@@ -119,6 +119,32 @@ public class BookServiceImpl implements BookService {
         return "success";
     }
 
+    @Override
+    public String bookkeepingAdd(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingCreateDate,
+                                 Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2,
+                                 String template,String bookKeepingTypeName) {
+        int typeId=bookMapper.generalTypeId()+1;
+        bookMapper.insertIntoBookKeeping(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,bookkeepingCreateDate,bookkeepingEndDate,extraMember1,extraMember2,typeId);
+        bookMapper.insertIntoBookkeepingType(typeId,bookKeepingTypeName,template);
+        return "success";
+    }
+
+    @Override
+    public String bookkeepingChange(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingCreateDate, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2) {
+        bookMapper.changeBookKeeping(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, bookkeepingCreateDate, bookkeepingEndDate, extraMember1, extraMember2);
+        return "success";
+    }
+
+    @Override
+    public List<String> bookkeepingTypeNamesFind(int uid, String bookKeepingName) {
+        List<BookKeeping> ls=bookMapper.selectByUidAndName(uid,bookKeepingName);
+        List<String> typeNames=new ArrayList<>();
+        for (BookKeeping i: ls){
+            typeNames.add(bookMapper.selectBookkeepingTypeName(i.getBookkeeping_type_id()));
+        }
+        return typeNames;
+    }
+
     private HashMap<String,String> getPaymentType(int uid, String bookKeepingName, String type, String bookKeepingTypeName){
         List<BookKeeping> bookKeeping=bookMapper.selectByUidAndName(uid,bookKeepingName);
         HashMap<String,String> l=new HashMap<>();
