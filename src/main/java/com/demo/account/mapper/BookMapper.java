@@ -3,10 +3,7 @@ package com.demo.account.mapper;
 import com.demo.account.entity.BasicFund;
 import com.demo.account.entity.BookKeeping;
 import com.demo.account.entity.CustomFund;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.StatementType;
 
 import java.sql.Timestamp;
@@ -15,6 +12,19 @@ import java.util.Map;
 
 public interface BookMapper {
 
+    @Results(id="bookMapper" ,value={
+            @Result(id = true,column = "bookkeeping_id",property = "bookkeeping_id"),
+            @Result(column = "uid",property = "uid"),
+            @Result(column = "bookkeeping_type_id",property = "bookkeeping_type_id"),
+            @Result(column = "bookkeeping_cover",property = "bookkeeping_cover"),
+            @Result(column = "bookkeeping_name",property = "bookkeeping_name"),
+            @Result(column = "bookkeeping_period",property = "bookkeeping_period"),
+            @Result(column = "bookkeeping_create_date",property = "bookkeeping_create_date"),
+            @Result(column = "bookkeeping_end_date",property = "bookkeeping_end_date"),
+            @Result(column = "customed_funds_id",property = "customed_funds_id"),
+            @Result(column = "extra_member1",property = "extra_member1"),
+            @Result(column = "extra_member2",property = "extra_member2")
+    })
     @Select("SELECT * FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName}")
     List<BookKeeping> selectByUidAndName(int uid,String bookKeepingName);
 
@@ -28,6 +38,12 @@ public interface BookMapper {
     @Select("SELECT fund_name FROM basic_funds WHERE fund_id=#{fundId};")
     String selectBasicFundName(String fundId);
 
+    @Results(id="customFundMapper" ,value={
+            @Result(id = true,column = "customed_fund_id",property = "customed_fund_id"),
+            @Result(column = "uid",property = "uid"),
+            @Result(column = "customed_fund_name",property = "customed_fund_name"),
+            @Result(column = "bookkeeping_type_id",property = "bookkeeping_type_id")
+    })
     @Select("SELECT * FROM customed_funds WHERE uid=#{uid} AND bookkeeping_type_id=#{bookkeepingTypeId}")
     List<CustomFund> selectCustomFund(int uid,int bookkeepingTypeId);
 
@@ -39,6 +55,11 @@ public interface BookMapper {
     @Update("UPDATE bookkeeping_tpye SET bookkeeping_type_funds_id=#{bookkeepingTypeFundsId} WHERE bookkeeping_type_id=#{bookKeepingTypeId};")
     int updateBookKeepingTypeList(String bookkeepingTypeFundsId, int bookKeepingTypeId);
 
+
+    @Results(id="basicFundMapper" ,value={
+            @Result(id = true,column = "fund_id",property = "fund_id"),
+            @Result(column = "fund_name",property = "fund_name")
+    })
     @Select("SELECT * FROM basic_funds")
     List<BasicFund> selectAllBasicFunds();
 

@@ -109,3 +109,7 @@ END;
 CALL find_bookkeeping_type_id(1,'我的账簿1','人情往来');
 
 SELECT bookkeeping_id FROM bookkeeping WHERE uid=1 AND bookkeeping_name='我的账簿1' AND bookkeeping_type_id=2;
+
+SELECT MAX(bookkeeping_type_id) FROM bookkeeping_tpye;
+
+UPDATE bookkeeping SET bookkeeping_cover="天空",bookkeeping_period="2个月",bookkeeping_create_date=20021114093723,bookkeeping_end_date=20021114093723,extra_member1=NULL,extra_member2=2 WHERE uid=1 AND bookkeeping_name="我的账簿4";
