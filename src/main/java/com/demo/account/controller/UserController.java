@@ -1,6 +1,7 @@
 package com.demo.account.controller;
 
 import com.demo.account.entity.User;
+import com.demo.account.exception.ResultBody;
 import com.demo.account.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +29,9 @@ public class UserController {
      * 功能：用户登录
      */
     @RequestMapping(method = RequestMethod.POST,value ="/login")
-    public User login(String userName,String wxId){
+    public ResultBody login(String userName, String wxId){
         User user=new User(userName,wxId);
         User userInDb=userService.login(user);
-        return userInDb;
+        return ResultBody.success(userInDb);
     }
 }

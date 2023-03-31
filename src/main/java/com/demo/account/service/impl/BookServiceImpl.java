@@ -1,10 +1,9 @@
 package com.demo.account.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.demo.account.entity.BasicFund;
-import com.demo.account.entity.BookKeeping;
-import com.demo.account.entity.CustomFund;
+import com.demo.account.entity.*;
 import com.demo.account.mapper.BookMapper;
+import com.demo.account.mapper.IncomePaymentMapper;
 import com.demo.account.service.BookService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +17,9 @@ import java.util.*;
 public class BookServiceImpl implements BookService {
     @Resource
     private BookMapper bookMapper;
+
+    @Resource
+    private IncomePaymentMapper incomePaymentMapper;
 
     @Override
     public List<BasicFund> selectAllBasicFund() {
@@ -117,6 +119,38 @@ public class BookServiceImpl implements BookService {
         int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
         bookMapper.insertIntoIncome(uid, bookKeepingId, accountId, amount, time, fundId, customedFundId, comment, enclosure);
         return "success";
+    }
+
+    @Override
+    public List<JSONObject> selectBookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
+        List<JSONObject> lsobject=new ArrayList<>();
+        for (Income i:ls){
+            JSONObject object=new JSONObject();
+            AccountDetail ac=incomePaymentMapper.selectAccountDetails(i.getAccountDetailId());
+            object.put("收入明细",i);
+            object.put("对应账户",ac);
+            lsobject.add(object);
+        }
+        return lsobject;
+    }
+
+    @Override
+    public List<JSONObject> selectBookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
+        List<JSONObject> lsobject=new ArrayList<>();
+        for (Payment i:ls){
+            JSONObject object=new JSONObject();
+            AccountDetail ac=incomePaymentMapper.selectAccountDetails(i.getAccountDetailId());
+            object.put("支出明细",i);
+            object.put("对应账户",ac);
+            lsobject.add(object);
+        }
+        return lsobject;
     }
 
     @Override

@@ -58,7 +58,8 @@ public interface BookMapper {
 
     @Results(id="basicFundMapper" ,value={
             @Result(id = true,column = "fund_id",property = "fund_id"),
-            @Result(column = "fund_name",property = "fund_name")
+            @Result(column = "fund_name",property = "fund_name"),
+            @Result(column = "icon",property = "icon")
     })
     @Select("SELECT * FROM basic_funds")
     List<BasicFund> selectAllBasicFunds();
@@ -67,12 +68,12 @@ public interface BookMapper {
     @Options(statementType = StatementType.CALLABLE)
     Integer findBookKeepingTypeIdInConditions(int uid, String bookKeepingName, String bookkeepingTypeName);
 
-    @Insert("INSERT INTO payment(uid,bookkeeping_id,account_id,amount,time,fund_id,customed_fund_id,comment,enclosure)\n" +
+    @Insert("INSERT INTO payment(uid,bookkeeping_id,account_detail_id,amount,time,fund_id,customed_fund_id,comment,enclosure)\n" +
             "VALUES(#{uid},#{bookKeepingId},#{accountId},#{amount},#{time},#{fundId},#{customedFundId},#{comment},#{enclosure});")
     int insertIntoPayment(int uid, int bookKeepingId, int accountId, String amount, Timestamp time,
                           String fundId,String customedFundId,String comment,String enclosure);
 
-    @Insert("INSERT INTO income(uid,bookkeeping_id,account_id,amount,time,fund_id,customed_fund_id,comment,enclosure)\n" +
+    @Insert("INSERT INTO income(uid,bookkeeping_id,account_detail_id,amount,time,fund_id,customed_fund_id,comment,enclosure)\n" +
             "VALUES(#{uid},#{bookKeepingId},#{accountId},#{amount},#{time},#{fundId},#{customedFundId},#{comment},#{enclosure});")
     int insertIntoIncome(int uid, int bookKeepingId, int accountId, String amount, Timestamp time,
                           String fundId,String customedFundId,String comment,String enclosure);

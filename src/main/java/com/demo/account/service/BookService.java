@@ -2,6 +2,8 @@ package com.demo.account.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.BasicFund;
+import com.demo.account.entity.Income;
+import com.demo.account.entity.Payment;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -32,4 +34,8 @@ public interface BookService {
                              Timestamp bookkeepingEndDate,Integer extraMember1,Integer extraMember2);
 
     List<String> bookkeepingTypeNamesFind(int uid ,String bookKeepingName);
+
+    List<JSONObject> selectBookkeepingIncome(int uid,String bookKeepingName, String bookKeepingTypeName);
+
+    List<JSONObject> selectBookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName);
 }

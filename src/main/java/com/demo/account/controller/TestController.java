@@ -1,10 +1,11 @@
 package com.demo.account.controller;
 
-import com.demo.account.entity.BookKeeping;
+import com.demo.account.entity.Income;
+import com.demo.account.entity.Payment;
 import com.demo.account.mapper.BookMapper;
+import com.demo.account.mapper.IncomePaymentMapper;
 import com.demo.account.mapper.UserMapper;
 import com.demo.account.utils.DateUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,7 +13,7 @@ import javax.annotation.Resource;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/test")
@@ -22,6 +23,10 @@ public class TestController {
 
     @Resource
     BookMapper bookMapper;
+
+    @Resource
+    IncomePaymentMapper incomePaymentMapper;
+
     @RequestMapping("/1")
     public String test(){
         //Date date = new Date();
@@ -64,8 +69,16 @@ public class TestController {
 
     @RequestMapping("/5")
     public  String test4(){
-        Timestamp timestamp=DateUtils.strToSqlDate("2023-1-1 13:25:30","yyyy-MM-dd HH:mm:ss");
+        Timestamp timestamp= DateUtils.strToSqlDate("2023-1-1 13:25:30","yyyy-MM-dd HH:mm:ss");
         System.out.println(timestamp);
         return "success";
+    }
+    @RequestMapping("/6")
+    public List<Income> test5(){
+        return incomePaymentMapper.selectAllIncome(1);
+    }
+    @RequestMapping("/7")
+    public List<Payment> test6(){
+        return incomePaymentMapper.selectAllPayment(1);
     }
 }
