@@ -257,7 +257,7 @@ public class BookServiceImpl implements BookService {
         }
         //System.out.println(hm);
         HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
-        result.put("周总和",hm);
+        result.put("周收入总和",hm);
         result.put("基础款项总和",funds);
         result.put("自定义款项总和",custom);
         System.out.println(result);
@@ -298,7 +298,7 @@ public class BookServiceImpl implements BookService {
         }
         //System.out.println(hm);
         HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
-        result.put("当月每天",hm);
+        result.put("当月每天收入",hm);
         result.put("基础款项总和",funds);
         result.put("自定义款项总和",custom);
         System.out.println(result);
@@ -338,7 +338,7 @@ public class BookServiceImpl implements BookService {
         }
         //System.out.println(hm);
         HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
-        result.put("当年每月",hm);
+        result.put("当年每月收入",hm);
         result.put("基础款项总和",funds);
         result.put("自定义款项总和",custom);
         System.out.println(result);
@@ -392,7 +392,7 @@ public class BookServiceImpl implements BookService {
         }
         //System.out.println(hm);
         HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
-        result.put("周总和",hm);
+        result.put("周支出总和",hm);
         result.put("基础款项总和",funds);
         result.put("自定义款项总和",custom);
         System.out.println(result);
@@ -433,7 +433,7 @@ public class BookServiceImpl implements BookService {
         }
         //System.out.println(hm);
         HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
-        result.put("当月每天",hm);
+        result.put("当月每天支出",hm);
         result.put("基础款项总和",funds);
         result.put("自定义款项总和",custom);
         System.out.println(result);
@@ -473,7 +473,7 @@ public class BookServiceImpl implements BookService {
         }
         //System.out.println(hm);
         HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
-        result.put("当年每月",hm);
+        result.put("当年每月支出",hm);
         result.put("基础款项总和",funds);
         result.put("自定义款项总和",custom);
         System.out.println(result);
