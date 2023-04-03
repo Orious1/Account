@@ -38,4 +38,18 @@ public interface BookService {
     List<JSONObject> selectBookkeepingIncome(int uid,String bookKeepingName, String bookKeepingTypeName);
 
     List<JSONObject> selectBookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName);
+
+    List<String> selectUserBookkeeping(int uid);
+
+    HashMap<String,HashMap<String, Integer>> countWeekIncome(int uid, String bookKeepingName, String bookKeepingTypeName,String nowTime);
+
+    HashMap<String,HashMap<String, Integer>>  countMonthIncome(int uid, String bookKeepingName, String bookKeepingTypeName,String startTime,String endTime);
+
+    HashMap<String,HashMap<String, Integer>> countYearIncome(int uid, String bookKeepingName, String bookKeepingTypeName,String startTime,String endTime);
+
+    HashMap<String,HashMap<String, Integer>> countWeekPayment(int uid, String bookKeepingName, String bookKeepingTypeName,String nowTime);
+
+    HashMap<String,HashMap<String, Integer>>  countMonthPayment(int uid, String bookKeepingName, String bookKeepingTypeName,String startTime,String endTime);
+
+    HashMap<String,HashMap<String, Integer>> countYearPayment(int uid, String bookKeepingName, String bookKeepingTypeName,String startTime,String endTime);
 }

@@ -5,6 +5,7 @@ import com.demo.account.entity.*;
 import com.demo.account.mapper.BookMapper;
 import com.demo.account.mapper.IncomePaymentMapper;
 import com.demo.account.service.BookService;
+import com.demo.account.utils.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -177,6 +178,311 @@ public class BookServiceImpl implements BookService {
             typeNames.add(bookMapper.selectBookkeepingTypeName(i.getBookkeeping_type_id()));
         }
         return typeNames;
+    }
+
+    //用于款项统计的私有方法用于 countWeekIncome countMonthIncome countYearIncome
+    private void incomeFundMapCreate(String fundName,Income i,HashMap<String,Integer> custom,HashMap<String,Integer> funds){
+        if (fundName!=null){ // 如果是基础款项
+            if (!funds.containsKey(fundName))
+                funds.put(fundName,Integer.parseInt(i.getAmount()));
+            else
+                funds.put(fundName,funds.get(fundName)+Integer.parseInt(i.getAmount()));
+        }else { // 如果是自定义款项
+            String customName=bookMapper.selectCustomedFundName(i.getCustomedFundId());
+            if (!custom.containsKey(customName))
+                custom.put(customName,Integer.parseInt(i.getAmount()));
+            else
+                custom.put(customName,custom.get(customName)+Integer.parseInt(i.getAmount()));
+        }
+    }
+
+    private void  paymentFundMapCreate(String fundName,Payment i,HashMap<String,Integer> custom,HashMap<String,Integer> funds){
+        if (fundName!=null){ // 如果是基础款项
+            if (!funds.containsKey(fundName))
+                funds.put(fundName,Integer.parseInt(i.getAmount()));
+            else
+                funds.put(fundName,funds.get(fundName)+Integer.parseInt(i.getAmount()));
+        }else { // 如果是自定义款项
+            String customName=bookMapper.selectCustomedFundName(i.getCustomedFundId());
+            if (!custom.containsKey(customName))
+                custom.put(customName,Integer.parseInt(i.getAmount()));
+            else
+                custom.put(customName,custom.get(customName)+Integer.parseInt(i.getAmount()));
+        }
+    }
+    @Override
+    public HashMap<String,HashMap<String, Integer>> countWeekIncome(int uid, String bookKeepingName, String bookKeepingTypeName, String nowTime) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId); // 获取对应账本的收入记录
+        HashMap<String,Integer> hm= new HashMap<>();
+        //初始化 hm
+        String[] weeks={"星期一","星期二","星期三","星期四","星期五","星期六","星期日"};
+        String format="yyyy-MM-dd HH:mm:ss";
+        for (String i:weeks){
+            hm.put(i,0);
+        }
+
+        // 获取当前日期所对应那一周的范围 例如今天是 2023年4月3日 那么一周对应的日期范围是 [2023-04-03 00:00:00 2023-04-09 23:59:59]
+        List<String> startEndTimeList=DateUtils.getStartAndEndTime(DateUtils.strToSqlDate(nowTime,format));
+        Timestamp startTime=DateUtils.strToSqlDate(startEndTimeList.get(0),format);
+        Timestamp endTime=DateUtils.strToSqlDate(startEndTimeList.get(1),format);
+
+        HashMap<String,Integer> funds=new HashMap<>(); // 记录基础款项的HashMap
+        HashMap<String,Integer> custom=new HashMap<>(); // 记录自定义款项的HashMap
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
+
+        for (Income i:ls){
+            String time= DateUtils.dateToStr(i.getTime(),format);
+
+            // 判断这个时间是星期几
+            String week=DateUtils.getWeek(time,format);
+
+            // 判断支出记录的时间是否在这个区间内
+            boolean whetherInThisMonth=DateUtils.isEffectiveDate(i.getTime(),startTime,endTime);
+
+            // 如果记录中的时间是对应区间中的,就获取hp中对应星期的值并且更改
+            if (whetherInThisMonth){
+                Integer temp=hm.get(week)+Integer.parseInt(i.getAmount());
+                hm.put(week,temp);
+                /*-------------------------*/
+                String fundName=bfm.get(i.getFundId()); //表示BI*所对应的款项名称
+                incomeFundMapCreate(fundName,i,custom,funds);
+            }
+        }
+        //System.out.println(hm);
+        HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
+        result.put("周总和",hm);
+        result.put("基础款项总和",funds);
+        result.put("自定义款项总和",custom);
+        System.out.println(result);
+        return result;
+    }
+
+    @Override
+    public HashMap<String,HashMap<String, Integer>>  countMonthIncome(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
+        HashMap<String,Integer> hm= new HashMap<>();
+        String format="yyyy-MM-dd HH:mm:ss";
+        int maxDayOfMonth=DateUtils.getDaysOfMonth(DateUtils.strToSqlDate(startTime,format));
+        for (Integer i=1;i<=maxDayOfMonth;i++){
+            hm.put(i.toString(),0);
+        }
+
+        HashMap<String,Integer> funds=new HashMap<>(); // 记录基础款项的HashMap
+        HashMap<String,Integer> custom=new HashMap<>(); // 记录自定义款项的HashMap
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
+
+        for(Income i:ls){
+            boolean whetherInThisMonth=DateUtils.isEffectiveDate(i.getTime(),DateUtils.strToSqlDate(startTime,format),DateUtils.strToSqlDate(endTime,format));
+            if (whetherInThisMonth){
+                String day=DateUtils.getMonthDay2Set(DateUtils.dateToStr(i.getTime(),format),"day").toString();
+                Integer temp=hm.get(day)+Integer.parseInt(i.getAmount());
+                hm.put(day,temp);
+                /*-------------------------*/
+                String fundName=bfm.get(i.getFundId()); //表示BI*所对应的款项名称
+                incomeFundMapCreate(fundName,i,custom,funds);
+            }
+        }
+        //System.out.println(hm);
+        HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
+        result.put("当月每天",hm);
+        result.put("基础款项总和",funds);
+        result.put("自定义款项总和",custom);
+        System.out.println(result);
+        return result;
+    }
+
+    @Override
+    public HashMap<String,HashMap<String, Integer>> countYearIncome(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
+        HashMap<String,Integer> hm= new HashMap<>();
+        String format="yyyy-MM-dd HH:mm:ss";
+        for (Integer i=1;i<=12;i++){
+            hm.put(i.toString(),0);
+        }
+
+        HashMap<String,Integer> funds=new HashMap<>(); // 记录基础款项的HashMap
+        HashMap<String,Integer> custom=new HashMap<>(); // 记录自定义款项的HashMap
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
+
+        for(Income i:ls){
+            boolean whetherInThisYear=DateUtils.isEffectiveDate(i.getTime(),DateUtils.strToSqlDate(startTime,format),DateUtils.strToSqlDate(endTime,format));
+            if (whetherInThisYear){
+                String month=DateUtils.getMonthDay2Set(DateUtils.dateToStr(i.getTime(),format),"month").toString();
+                Integer temp=hm.get(month)+Integer.parseInt(i.getAmount());
+                hm.put(month,temp);
+                /*-------------------------*/
+                String fundName=bfm.get(i.getFundId()); //表示BI*所对应的款项名称
+                incomeFundMapCreate(fundName,i,custom,funds);
+            }
+        }
+        //System.out.println(hm);
+        HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
+        result.put("当年每月",hm);
+        result.put("基础款项总和",funds);
+        result.put("自定义款项总和",custom);
+        System.out.println(result);
+        return result;
+    }
+
+    @Override
+    public HashMap<String, HashMap<String, Integer>> countWeekPayment(int uid, String bookKeepingName, String bookKeepingTypeName, String nowTime) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId); // 获取对应账本的收入记录
+        HashMap<String,Integer> hm= new HashMap<>();
+        //初始化 hm
+        String[] weeks={"星期一","星期二","星期三","星期四","星期五","星期六","星期日"};
+        String format="yyyy-MM-dd HH:mm:ss";
+        for (String i:weeks){
+            hm.put(i,0);
+        }
+
+        // 获取当前日期所对应那一周的范围 例如今天是 2023年4月3日 那么一周对应的日期范围是 [2023-04-03 00:00:00 2023-04-09 23:59:59]
+        List<String> startEndTimeList=DateUtils.getStartAndEndTime(DateUtils.strToSqlDate(nowTime,format));
+        Timestamp startTime=DateUtils.strToSqlDate(startEndTimeList.get(0),format);
+        Timestamp endTime=DateUtils.strToSqlDate(startEndTimeList.get(1),format);
+
+        HashMap<String,Integer> funds=new HashMap<>(); // 记录基础款项的HashMap
+        HashMap<String,Integer> custom=new HashMap<>(); // 记录自定义款项的HashMap
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
+
+        for (Payment i:ls){
+            String time= DateUtils.dateToStr(i.getTime(),format);
+
+            // 判断这个时间是星期几
+            String week=DateUtils.getWeek(time,format);
+
+            // 判断支出记录的时间是否在这个区间内
+            boolean whetherInThisMonth=DateUtils.isEffectiveDate(i.getTime(),startTime,endTime);
+
+            // 如果记录中的时间是对应区间中的,就获取hp中对应星期的值并且更改
+            if (whetherInThisMonth){
+                Integer temp=hm.get(week)+Integer.parseInt(i.getAmount());
+                hm.put(week,temp);
+                /*-------------------------*/
+                String fundName=bfm.get(i.getFundId()); //表示BO*所对应的款项名称
+                paymentFundMapCreate(fundName,i,custom,funds);
+            }
+        }
+        //System.out.println(hm);
+        HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
+        result.put("周总和",hm);
+        result.put("基础款项总和",funds);
+        result.put("自定义款项总和",custom);
+        System.out.println(result);
+        return result;
+    }
+
+    @Override
+    public HashMap<String, HashMap<String, Integer>> countMonthPayment(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
+        HashMap<String,Integer> hm= new HashMap<>();
+        String format="yyyy-MM-dd HH:mm:ss";
+        int maxDayOfMonth=DateUtils.getDaysOfMonth(DateUtils.strToSqlDate(startTime,format));
+        for (Integer i=1;i<=maxDayOfMonth;i++){
+            hm.put(i.toString(),0);
+        }
+
+        HashMap<String,Integer> funds=new HashMap<>(); // 记录基础款项的HashMap
+        HashMap<String,Integer> custom=new HashMap<>(); // 记录自定义款项的HashMap
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
+
+        for(Payment i:ls){
+            boolean whetherInThisMonth=DateUtils.isEffectiveDate(i.getTime(),DateUtils.strToSqlDate(startTime,format),DateUtils.strToSqlDate(endTime,format));
+            if (whetherInThisMonth){
+                String day=DateUtils.getMonthDay2Set(DateUtils.dateToStr(i.getTime(),format),"day").toString();
+                Integer temp=hm.get(day)+Integer.parseInt(i.getAmount());
+                hm.put(day,temp);
+                /*-------------------------*/
+                String fundName=bfm.get(i.getFundId()); //表示BO*所对应的款项名称
+                paymentFundMapCreate(fundName,i,custom,funds);
+            }
+        }
+        //System.out.println(hm);
+        HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
+        result.put("当月每天",hm);
+        result.put("基础款项总和",funds);
+        result.put("自定义款项总和",custom);
+        System.out.println(result);
+        return result;
+    }
+
+    @Override
+    public HashMap<String, HashMap<String, Integer>> countYearPayment(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
+        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
+        HashMap<String,Integer> hm= new HashMap<>();
+        String format="yyyy-MM-dd HH:mm:ss";
+        for (Integer i=1;i<=12;i++){
+            hm.put(i.toString(),0);
+        }
+
+        HashMap<String,Integer> funds=new HashMap<>(); // 记录基础款项的HashMap
+        HashMap<String,Integer> custom=new HashMap<>(); // 记录自定义款项的HashMap
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
+
+        for(Payment i:ls){
+            boolean whetherInThisYear=DateUtils.isEffectiveDate(i.getTime(),DateUtils.strToSqlDate(startTime,format),DateUtils.strToSqlDate(endTime,format));
+            if (whetherInThisYear){
+                String month=DateUtils.getMonthDay2Set(DateUtils.dateToStr(i.getTime(),format),"month").toString();
+                Integer temp=hm.get(month)+Integer.parseInt(i.getAmount());
+                hm.put(month,temp);
+                /*-------------------------*/
+                String fundName=bfm.get(i.getFundId()); //表示BI*所对应的款项名称
+                paymentFundMapCreate(fundName,i,custom,funds);
+            }
+        }
+        //System.out.println(hm);
+        HashMap<String,HashMap<String, Integer>> result=new HashMap<>();
+        result.put("当年每月",hm);
+        result.put("基础款项总和",funds);
+        result.put("自定义款项总和",custom);
+        System.out.println(result);
+        return result;
+    }
+
+    @Override
+    public List<String> selectUserBookkeeping(int uid) {
+        return bookMapper.selectUserBookkeeping(uid);
     }
 
     private HashMap<String,String> getPaymentType(int uid, String bookKeepingName, String type, String bookKeepingTypeName){

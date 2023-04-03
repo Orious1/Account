@@ -2,6 +2,7 @@ package com.demo.account.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.BasicFund;
+import com.demo.account.exception.BizException;
 import com.demo.account.exception.ResultBody;
 import com.demo.account.service.BookService;
 import com.demo.account.utils.DateUtils;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -121,9 +125,12 @@ public class BookController {
      *功能：添加一个账本
      */
     @RequestMapping(method = RequestMethod.POST,value = "/new")
-    ResultBody bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,String bookkeepingCreateDate,
+    ResultBody bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,
                           String bookkeepingEndDate,Integer extraMember1,Integer extraMember2,
                           String template,String bookKeepingTypeName){
+        java.util.Date day=new Date();
+        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String bookkeepingCreateDate = sdf3.format(day);
         Timestamp t1=DateUtils.strToSqlDate(bookkeepingCreateDate,"yyyy-MM-dd HH:mm:ss");
         Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
         bookService.bookkeepingAdd(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, t1, t2, extraMember1, extraMember2,template,bookKeepingTypeName);
@@ -155,7 +162,17 @@ public class BookController {
 
     /**
      *
-     * @return List<Income>
+     * @param uid
+     * @return 账本名称的列表
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/getBookNames")
+    ResultBody selectUserBookkeeping(int uid){
+        return ResultBody.success(bookService.selectUserBookkeeping(uid));
+    }
+
+    /**
+     *
+     * @return List<Income'sJSONObject>
      * 功能：获取对于账本的收入明细
      */
     @RequestMapping(method = RequestMethod.GET,value = "/getIncome")
@@ -165,11 +182,65 @@ public class BookController {
 
     /**
      *
-     * @return List<Payment>
+     * @return List<Payment'sJSONObject>
      * 功能：获取对于账本的支出明细
      */
     @RequestMapping(method = RequestMethod.GET,value = "/getPayment")
     ResultBody selectBookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName){
         return ResultBody.success(bookService.selectBookkeepingPayment(uid, bookKeepingName, bookKeepingTypeName));
+    }
+
+    /**
+     *
+     * @param nowTime 用于查询一周账单,提供查询时的时间,在按月/年查询时可为空
+     * @param startTime 用于查询一个月/年的账单,提供该月/年开始时间,在按周查询时可为空
+     * @param endTime 用于查询一个月/年的账单,提供该月/年结束时间,在按周查询时可为空
+     * @param getWhat 用于区别你查询的是周/月/年 提供的输入为{week,month,year}
+     * @return HashMap<String,Integer> or HashMap<Integer,Integer>
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/getPeriodIncome")
+    ResultBody getPeriodIncome(int uid, String bookKeepingName, String bookKeepingTypeName,
+                               String nowTime,String startTime,String endTime,String getWhat){
+        try{
+            switch (getWhat){
+                case "week":
+                    return ResultBody.success(bookService.countWeekIncome(uid, bookKeepingName, bookKeepingTypeName, nowTime));
+                case "month":
+                    return ResultBody.success(bookService.countMonthIncome(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                case "year":
+                    return ResultBody.success(bookService.countYearIncome(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                default:
+                    return ResultBody.error("getWhat参数错误 提供的输入应为week/month/year}");
+            }
+        }catch (Exception e){
+          throw new BizException("-1","日期格式不对,应为yyyy-MM-dd HH:mm:ss");
+        }
+    }
+
+    /**
+     *
+     * @param nowTime 用于查询一周账单,提供查询时的时间,在按月/年查询时可为空
+     * @param startTime 用于查询一个月/年的账单,提供该月/年开始时间,在按周查询时可为空
+     * @param endTime 用于查询一个月/年的账单,提供该月/年结束时间,在按周查询时可为空
+     * @param getWhat 用于区别你查询的是周/月/年 提供的输入为{week,month,year}
+     * @return HashMap<String,Integer> or HashMap<Integer,Integer>
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/getPeriodPayment")
+    ResultBody getPeriodPayment(int uid, String bookKeepingName, String bookKeepingTypeName,
+                               String nowTime,String startTime,String endTime,String getWhat){
+        try{
+            switch (getWhat){
+                case "week":
+                    return ResultBody.success(bookService.countWeekPayment(uid, bookKeepingName, bookKeepingTypeName, nowTime));
+                case "month":
+                    return ResultBody.success(bookService.countMonthPayment(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                case "year":
+                    return ResultBody.success(bookService.countYearPayment(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                default:
+                    return ResultBody.error("getWhat参数错误 提供的输入应为week/month/year}");
+            }
+        }catch (Exception e){
+            throw new BizException("-1","日期格式不对,应为yyyy-MM-dd HH:mm:ss");
+        }
     }
 }

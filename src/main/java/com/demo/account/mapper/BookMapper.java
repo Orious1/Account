@@ -96,4 +96,10 @@ public interface BookMapper {
     @Insert("INSERT INTO bookkeeping_tpye(bookkeeping_type_id,bookkeeping_type_name,bookkeeping_type_funds_id)\n" +
             "VALUES(#{bookkeepingTypeId},#{bookKeepingTypeName},#{template})")
     int insertIntoBookkeepingType(int bookkeepingTypeId,String bookKeepingTypeName,String template);
+
+    @Select("select bookkeeping_name from bookkeeping where uid=#{uid}")
+    List<String> selectUserBookkeeping(int uid);
+
+    @Select("SELECT customed_fund_name FROM customed_funds WHERE customed_fund_id=#{customedFundId}")
+    String selectCustomedFundName(String customedFundId );
 }
