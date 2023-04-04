@@ -2,6 +2,7 @@ package com.demo.account.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.*;
+import com.demo.account.exception.BizException;
 import com.demo.account.mapper.BookMapper;
 import com.demo.account.mapper.IncomePaymentMapper;
 import com.demo.account.service.BookService;
@@ -123,9 +124,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<JSONObject> selectBookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public List<JSONObject> selectBookkeepingIncome(int uid, String bookKeepingName) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
         List<JSONObject> lsobject=new ArrayList<>();
         for (Income i:ls){
@@ -139,9 +140,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<JSONObject> selectBookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public List<JSONObject> selectBookkeepingPayment(int uid, String bookKeepingName) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
         List<JSONObject> lsobject=new ArrayList<>();
         for (Payment i:ls){
@@ -158,6 +159,8 @@ public class BookServiceImpl implements BookService {
     public String bookkeepingAdd(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingCreateDate,
                                  Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2,
                                  String template,String bookKeepingTypeName) {
+        List<String> bookKeepingNameList=bookMapper.selectUserBookkeeping(uid);
+        if (bookKeepingNameList.contains(bookKeepingName)) throw new BizException("-1","账本名不能重复");
         int typeId=bookMapper.generalTypeId()+1;
         bookMapper.insertIntoBookKeeping(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,bookkeepingCreateDate,bookkeepingEndDate,extraMember1,extraMember2,typeId);
         bookMapper.insertIntoBookkeepingType(typeId,bookKeepingTypeName,template);
@@ -165,8 +168,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public String bookkeepingChange(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingCreateDate, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2) {
-        bookMapper.changeBookKeeping(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, bookkeepingCreateDate, bookkeepingEndDate, extraMember1, extraMember2);
+    public String bookkeepingChange(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2) {
+        bookMapper.changeBookKeeping(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, bookkeepingEndDate, extraMember1, extraMember2);
         return "success";
     }
 
@@ -180,7 +183,7 @@ public class BookServiceImpl implements BookService {
         return typeNames;
     }
 
-    //用于款项统计的私有方法用于 countWeekIncome countMonthIncome countYearIncome
+    //用于收入款项统计的私有方法用于 countWeekIncome countMonthIncome countYearIncome
     private void incomeFundMapCreate(String fundName,Income i,HashMap<String,Integer> custom,HashMap<String,Integer> funds){
         if (fundName!=null){ // 如果是基础款项
             if (!funds.containsKey(fundName))
@@ -211,9 +214,10 @@ public class BookServiceImpl implements BookService {
         }
     }
     @Override
-    public HashMap<String,HashMap<String, Integer>> countWeekIncome(int uid, String bookKeepingName, String bookKeepingTypeName, String nowTime) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public HashMap<String,HashMap<String, Integer>> countWeekIncome(int uid, String bookKeepingName, String nowTime) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId); // 获取对应账本的收入记录
         HashMap<String,Integer> hm= new HashMap<>();
         //初始化 hm
@@ -265,9 +269,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public HashMap<String,HashMap<String, Integer>>  countMonthIncome(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public HashMap<String,HashMap<String, Integer>>  countMonthIncome(int uid, String bookKeepingName, String startTime, String endTime) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
         HashMap<String,Integer> hm= new HashMap<>();
         String format="yyyy-MM-dd HH:mm:ss";
@@ -306,9 +311,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public HashMap<String,HashMap<String, Integer>> countYearIncome(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public HashMap<String,HashMap<String, Integer>> countYearIncome(int uid, String bookKeepingName, String startTime, String endTime) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
         HashMap<String,Integer> hm= new HashMap<>();
         String format="yyyy-MM-dd HH:mm:ss";
@@ -346,9 +352,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public HashMap<String, HashMap<String, Integer>> countWeekPayment(int uid, String bookKeepingName, String bookKeepingTypeName, String nowTime) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public HashMap<String, HashMap<String, Integer>> countWeekPayment(int uid, String bookKeepingName, String nowTime) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId); // 获取对应账本的收入记录
         HashMap<String,Integer> hm= new HashMap<>();
         //初始化 hm
@@ -400,9 +407,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public HashMap<String, HashMap<String, Integer>> countMonthPayment(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public HashMap<String, HashMap<String, Integer>> countMonthPayment(int uid, String bookKeepingName, String startTime, String endTime) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
         HashMap<String,Integer> hm= new HashMap<>();
         String format="yyyy-MM-dd HH:mm:ss";
@@ -441,9 +449,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public HashMap<String, HashMap<String, Integer>> countYearPayment(int uid, String bookKeepingName, String bookKeepingTypeName, String startTime, String endTime) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public HashMap<String, HashMap<String, Integer>> countYearPayment(int uid, String bookKeepingName, String startTime, String endTime) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
         HashMap<String,Integer> hm= new HashMap<>();
         String format="yyyy-MM-dd HH:mm:ss";

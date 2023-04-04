@@ -66,7 +66,7 @@ public class BookController {
     @RequestMapping(method = RequestMethod.POST,value = "/setting_add_out")
     ResultBody outSettingChange(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
         bookService.outSettingChange(uid, bookKeepingName, bookKeepingTypeName, json);
-        return ResultBody.success();
+        return ResultBody.success("设置成功");
     }
 
     /**
@@ -81,7 +81,7 @@ public class BookController {
     @RequestMapping(method = RequestMethod.POST,value = "/setting_add_in")
     ResultBody inSettingChange(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
         bookService.inSettingChange(uid, bookKeepingName, bookKeepingTypeName, json);
-        return ResultBody.success();
+        return ResultBody.success("设置成功");
     }
 
     /**
@@ -104,7 +104,7 @@ public class BookController {
                               String fundId,String customedFundId,String comment,String enclosure){
         Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
         bookService.bookkeepingPayment(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
-        return ResultBody.success();
+        return ResultBody.success("添加成功");
     }
 
     /**
@@ -117,7 +117,7 @@ public class BookController {
                               String fundId,String customedFundId,String comment,String enclosure){
         Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
         bookService.bookkeepingIncome(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
-        return ResultBody.success();
+        return ResultBody.success("添加成功");
     }
 
     /**
@@ -134,7 +134,7 @@ public class BookController {
         Timestamp t1=DateUtils.strToSqlDate(bookkeepingCreateDate,"yyyy-MM-dd HH:mm:ss");
         Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
         bookService.bookkeepingAdd(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, t1, t2, extraMember1, extraMember2,template,bookKeepingTypeName);
-        return ResultBody.success();
+        return ResultBody.success("添加成功");
     }
 
     /**
@@ -144,10 +144,9 @@ public class BookController {
     @RequestMapping(method = RequestMethod.PUT,value = "/change")
     ResultBody bookkeepingChange(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,String bookkeepingCreateDate,
                              String bookkeepingEndDate,Integer extraMember1,Integer extraMember2){
-        Timestamp t1=DateUtils.strToSqlDate(bookkeepingCreateDate,"yyyy-MM-dd HH:mm:ss");
         Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
-        bookService.bookkeepingChange(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,t1,t2,extraMember1,extraMember2);
-        return ResultBody.success();
+        bookService.bookkeepingChange(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,t2,extraMember1,extraMember2);
+        return ResultBody.success("修改成功");
     }
 
     /**
@@ -176,8 +175,8 @@ public class BookController {
      * 功能：获取对于账本的收入明细
      */
     @RequestMapping(method = RequestMethod.GET,value = "/getIncome")
-    ResultBody selectBookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName){
-        return ResultBody.success(bookService.selectBookkeepingIncome(uid, bookKeepingName, bookKeepingTypeName));
+    ResultBody selectBookkeepingIncome(int uid, String bookKeepingName){
+        return ResultBody.success(bookService.selectBookkeepingIncome(uid, bookKeepingName));
     }
 
     /**
@@ -186,8 +185,8 @@ public class BookController {
      * 功能：获取对于账本的支出明细
      */
     @RequestMapping(method = RequestMethod.GET,value = "/getPayment")
-    ResultBody selectBookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName){
-        return ResultBody.success(bookService.selectBookkeepingPayment(uid, bookKeepingName, bookKeepingTypeName));
+    ResultBody selectBookkeepingPayment(int uid, String bookKeepingName){
+        return ResultBody.success(bookService.selectBookkeepingPayment(uid, bookKeepingName));
     }
 
     /**
@@ -199,16 +198,16 @@ public class BookController {
      * @return HashMap<String,Integer> or HashMap<Integer,Integer>
      */
     @RequestMapping(method = RequestMethod.GET,value = "/getPeriodIncome")
-    ResultBody getPeriodIncome(int uid, String bookKeepingName, String bookKeepingTypeName,
+    ResultBody getPeriodIncome(int uid, String bookKeepingName,
                                String nowTime,String startTime,String endTime,String getWhat){
         try{
             switch (getWhat){
                 case "week":
-                    return ResultBody.success(bookService.countWeekIncome(uid, bookKeepingName, bookKeepingTypeName, nowTime));
+                    return ResultBody.success(bookService.countWeekIncome(uid, bookKeepingName, nowTime));
                 case "month":
-                    return ResultBody.success(bookService.countMonthIncome(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                    return ResultBody.success(bookService.countMonthIncome(uid, bookKeepingName, startTime, endTime));
                 case "year":
-                    return ResultBody.success(bookService.countYearIncome(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                    return ResultBody.success(bookService.countYearIncome(uid, bookKeepingName, startTime, endTime));
                 default:
                     return ResultBody.error("getWhat参数错误 提供的输入应为week/month/year}");
             }
@@ -226,16 +225,16 @@ public class BookController {
      * @return HashMap<String,Integer> or HashMap<Integer,Integer>
      */
     @RequestMapping(method = RequestMethod.GET,value = "/getPeriodPayment")
-    ResultBody getPeriodPayment(int uid, String bookKeepingName, String bookKeepingTypeName,
+    ResultBody getPeriodPayment(int uid, String bookKeepingName,
                                String nowTime,String startTime,String endTime,String getWhat){
         try{
             switch (getWhat){
                 case "week":
-                    return ResultBody.success(bookService.countWeekPayment(uid, bookKeepingName, bookKeepingTypeName, nowTime));
+                    return ResultBody.success(bookService.countWeekPayment(uid, bookKeepingName, nowTime));
                 case "month":
-                    return ResultBody.success(bookService.countMonthPayment(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                    return ResultBody.success(bookService.countMonthPayment(uid, bookKeepingName, startTime, endTime));
                 case "year":
-                    return ResultBody.success(bookService.countYearPayment(uid, bookKeepingName, bookKeepingTypeName, startTime, endTime));
+                    return ResultBody.success(bookService.countYearPayment(uid, bookKeepingName, startTime, endTime));
                 default:
                     return ResultBody.error("getWhat参数错误 提供的输入应为week/month/year}");
             }

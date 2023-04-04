@@ -89,9 +89,9 @@ public interface BookMapper {
     @Select("SELECT MAX(bookkeeping_type_id) FROM bookkeeping_tpye")
     int generalTypeId();
 
-    @Update("UPDATE bookkeeping SET bookkeeping_cover=#{bookKeepingCover},bookkeeping_period=#{bookkeepingPeriod},bookkeeping_create_date=#{bookkeepingCreateDate},bookkeeping_end_date=#{bookkeepingEndDate}," +
+    @Update("UPDATE bookkeeping SET bookkeeping_cover=#{bookKeepingCover},bookkeeping_period=#{bookkeepingPeriod},bookkeeping_end_date=#{bookkeepingEndDate}," +
             "extra_member1=#{extraMember1},extra_member2=#{extraMember2} WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName}")
-    int changeBookKeeping(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingCreateDate, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2);
+    int changeBookKeeping(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2);
 
     @Insert("INSERT INTO bookkeeping_tpye(bookkeeping_type_id,bookkeeping_type_name,bookkeeping_type_funds_id)\n" +
             "VALUES(#{bookkeepingTypeId},#{bookKeepingTypeName},#{template})")
@@ -102,4 +102,7 @@ public interface BookMapper {
 
     @Select("SELECT customed_fund_name FROM customed_funds WHERE customed_fund_id=#{customedFundId}")
     String selectCustomedFundName(String customedFundId );
+
+    @Select("SELECT bookkeeping_id FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName}")
+    int selectBookkeepingId(int uid,String bookKeepingName);
 }
