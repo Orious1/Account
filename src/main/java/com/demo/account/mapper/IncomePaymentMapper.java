@@ -53,4 +53,6 @@ public interface IncomePaymentMapper {
     @Select("SELECT *FROM account_details WHERE account_detail_id=#{accountDetailId}")
     AccountDetail selectAccountDetails(Integer accountDetailId);
 
+    @Select("select account_detail_type_name from account_details_type where account_detail_type_id = #{accountDetailTypeId}")
+    String getAccountTypeName(Integer accountDetailTypeId);
 }

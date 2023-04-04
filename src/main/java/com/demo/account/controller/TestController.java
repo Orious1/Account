@@ -3,6 +3,7 @@ package com.demo.account.controller;
 import com.demo.account.entity.Income;
 import com.demo.account.entity.Payment;
 import com.demo.account.mapper.BookMapper;
+import com.demo.account.mapper.BudgetMapper;
 import com.demo.account.mapper.IncomePaymentMapper;
 import com.demo.account.mapper.UserMapper;
 import com.demo.account.utils.DateUtils;
@@ -27,6 +28,8 @@ public class TestController {
     @Resource
     IncomePaymentMapper incomePaymentMapper;
 
+    @Resource
+    BudgetMapper budgetMapper;
     @RequestMapping("/1")
     public String test(){
         //Date date = new Date();
@@ -80,5 +83,12 @@ public class TestController {
     @RequestMapping("/7")
     public List<Payment> test6(){
         return incomePaymentMapper.selectAllPayment(1);
+    }
+
+    @RequestMapping("/8")
+    public String test7(){
+        //bookMapper.selectByUidAndName(1,"我的账簿1");
+        budgetMapper.selectBookkeepingBudget(1);
+        return "success";
     }
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.*;
 import com.demo.account.exception.BizException;
 import com.demo.account.mapper.BookMapper;
+import com.demo.account.mapper.BudgetMapper;
 import com.demo.account.mapper.IncomePaymentMapper;
 import com.demo.account.service.BookService;
 import com.demo.account.utils.DateUtils;
@@ -22,6 +23,9 @@ public class BookServiceImpl implements BookService {
 
     @Resource
     private IncomePaymentMapper incomePaymentMapper;
+
+    @Resource
+    private BudgetMapper budgetMapper;
 
     @Override
     public List<BasicFund> selectAllBasicFund() {
@@ -106,19 +110,21 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public String bookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName,int accountId, String amount, Timestamp time,
+    public String bookkeepingPayment(int uid, String bookKeepingName,int accountId, String amount, Timestamp time,
                                      String fundId, String customedFundId, String comment, String enclosure)
     {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         bookMapper.insertIntoPayment(uid, bookKeepingId, accountId, amount, time, fundId, customedFundId, comment, enclosure);
         return "success";
     }
 
     @Override
-    public String bookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, Timestamp time, String fundId, String customedFundId, String comment, String enclosure) {
-        int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
-        int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+    public String bookkeepingIncome(int uid, String bookKeepingName, int accountId, String amount, Timestamp time, String fundId, String customedFundId, String comment, String enclosure) {
+        //int bookKeepingTypeId=bookMapper.findBookKeepingTypeIdInConditions(uid,bookKeepingName,bookKeepingTypeName);
+        //int bookKeepingId=bookMapper.findBookKeepingId(uid,bookKeepingName,bookKeepingTypeId);
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         bookMapper.insertIntoIncome(uid, bookKeepingId, accountId, amount, time, fundId, customedFundId, comment, enclosure);
         return "success";
     }
@@ -129,11 +135,26 @@ public class BookServiceImpl implements BookService {
         int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Income> ls=incomePaymentMapper.selectAllIncome(bookKeepingId);
         List<JSONObject> lsobject=new ArrayList<>();
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
         for (Income i:ls){
             JSONObject object=new JSONObject();
             AccountDetail ac=incomePaymentMapper.selectAccountDetails(i.getAccountDetailId());
-            object.put("收入明细",i);
-            object.put("对应账户",ac);
+            object.put("时间",i.getTime());
+            object.put("备注",i.getComment());
+            object.put("金额",i.getAmount());
+            String fundName=bfm.get(i.getFundId());
+            if (fundName!=null){
+                object.put("款项名称",fundName);
+            }else {
+                String customName=bookMapper.selectCustomedFundName(i.getCustomedFundId());
+                object.put("款项名称",customName);
+            }
+            object.put("账户名称",incomePaymentMapper.getAccountTypeName(ac.getAccountDetailType()));
             lsobject.add(object);
         }
         return lsobject;
@@ -145,31 +166,49 @@ public class BookServiceImpl implements BookService {
         int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
         List<Payment> ls=incomePaymentMapper.selectAllPayment(bookKeepingId);
         List<JSONObject> lsobject=new ArrayList<>();
+        List<BasicFund> basicFunds=bookMapper.selectAllBasicFunds();
+        HashMap<String,String> bfm=new HashMap<>(); // 记录基础款项的HashMap
+        // 给bfm赋值
+        for (BasicFund i:basicFunds){
+            bfm.put(i.getFund_id(),i.getFund_name());
+        }
         for (Payment i:ls){
             JSONObject object=new JSONObject();
             AccountDetail ac=incomePaymentMapper.selectAccountDetails(i.getAccountDetailId());
-            object.put("支出明细",i);
-            object.put("对应账户",ac);
+            object.put("时间",i.getTime());
+            object.put("备注",i.getComment());
+            object.put("金额","-"+i.getAmount());
+            String fundName=bfm.get(i.getFundId());
+            if (fundName!=null){
+                object.put("款项名称",fundName);
+            }else {
+                String customName=bookMapper.selectCustomedFundName(i.getCustomedFundId());
+                object.put("款项名称",customName);
+            }
+            object.put("账户名称",incomePaymentMapper.getAccountTypeName(ac.getAccountDetailType()));
             lsobject.add(object);
         }
         return lsobject;
     }
 
     @Override
-    public String bookkeepingAdd(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingCreateDate,
-                                 Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2,
+    public String bookkeepingAdd(int uid, String bookKeepingName, String bookKeepingCover, Integer extraMember1, Integer extraMember2,
                                  String template,String bookKeepingTypeName) {
         List<String> bookKeepingNameList=bookMapper.selectUserBookkeeping(uid);
         if (bookKeepingNameList.contains(bookKeepingName)) throw new BizException("-1","账本名不能重复");
         int typeId=bookMapper.generalTypeId()+1;
-        bookMapper.insertIntoBookKeeping(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,bookkeepingCreateDate,bookkeepingEndDate,extraMember1,extraMember2,typeId);
+        bookMapper.insertIntoBookKeeping(uid,bookKeepingName,bookKeepingCover,extraMember1,extraMember2,typeId);
         bookMapper.insertIntoBookkeepingType(typeId,bookKeepingTypeName,template);
         return "success";
     }
 
     @Override
-    public String bookkeepingChange(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2) {
-        bookMapper.changeBookKeeping(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, bookkeepingEndDate, extraMember1, extraMember2);
+    public String bookkeepingChange(int uid, String bookKeepingName,String bookKeepingNameNew, String bookKeepingCover, Integer extraMember1, Integer extraMember2) {
+        List<String> bookKeepingNameList=bookMapper.selectUserBookkeeping(uid);
+        if (!bookKeepingNameList.contains(bookKeepingName)) throw new BizException("-1","账本名不存在");
+        bookKeepingNameList.remove(bookKeepingName);
+        if (bookKeepingNameList.contains(bookKeepingNameNew)) throw new BizException("-1","新的账本名重名");
+        bookMapper.changeBookKeeping(uid, bookKeepingName, bookKeepingNameNew,bookKeepingCover, extraMember1, extraMember2);
         return "success";
     }
 
@@ -492,6 +531,31 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<String> selectUserBookkeeping(int uid) {
         return bookMapper.selectUserBookkeeping(uid);
+    }
+
+    @Override
+    public Budget getBookkeepingBudget(int uid, String bookKeepingName) {
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
+        return budgetMapper.selectBookkeepingBudget(bookKeepingId);
+    }
+
+    @Override
+    public String changeBookkeepingBudget(int uid, String bookKeepingName, String month, String budget) {
+        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
+        String[] months={"jan","feb","mar","apr","may","jun","jul","aug","sept","oct","nov","dec"};
+        boolean validOrNot=false;
+        for (String i: months){
+            if (Objects.equals(i, month)){
+                validOrNot=true;
+                break;
+            }
+        }
+        if (validOrNot){
+            budgetMapper.updateBudget(month,budget,bookKeepingId);
+        }else {
+            throw new BizException("-1","月份的输入不正确应为jan/feb/mar/apr/may/jun/jul/aug/sept/oct/nov/dec其中之一");
+        }
+        return "success";
     }
 
     private HashMap<String,String> getPaymentType(int uid, String bookKeepingName, String type, String bookKeepingTypeName){

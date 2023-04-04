@@ -100,10 +100,10 @@ public class BookController {
      * 功能：添加一笔支出
      */
     @RequestMapping(method = RequestMethod.POST,value = "/out")
-    ResultBody bookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, String time,
+    ResultBody bookkeepingPayment(int uid, String bookKeepingName, int accountId, String amount, String time,
                               String fundId,String customedFundId,String comment,String enclosure){
         Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
-        bookService.bookkeepingPayment(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
+        bookService.bookkeepingPayment(uid, bookKeepingName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
         return ResultBody.success("添加成功");
     }
 
@@ -113,10 +113,10 @@ public class BookController {
      * 功能：添加一笔收入
      */
     @RequestMapping(method = RequestMethod.POST,value = "/in")
-    ResultBody bookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, String time,
+    ResultBody bookkeepingIncome(int uid, String bookKeepingName, int accountId, String amount, String time,
                               String fundId,String customedFundId,String comment,String enclosure){
         Timestamp timestamp= DateUtils.strToSqlDate(time,"yyyy-MM-dd HH:mm:ss");
-        bookService.bookkeepingIncome(uid, bookKeepingName, bookKeepingTypeName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
+        bookService.bookkeepingIncome(uid, bookKeepingName, accountId, amount, timestamp, fundId, customedFundId, comment, enclosure);
         return ResultBody.success("添加成功");
     }
 
@@ -125,15 +125,9 @@ public class BookController {
      *功能：添加一个账本
      */
     @RequestMapping(method = RequestMethod.POST,value = "/new")
-    ResultBody bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,
-                          String bookkeepingEndDate,Integer extraMember1,Integer extraMember2,
+    ResultBody bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,Integer extraMember1,Integer extraMember2,
                           String template,String bookKeepingTypeName){
-        java.util.Date day=new Date();
-        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String bookkeepingCreateDate = sdf3.format(day);
-        Timestamp t1=DateUtils.strToSqlDate(bookkeepingCreateDate,"yyyy-MM-dd HH:mm:ss");
-        Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
-        bookService.bookkeepingAdd(uid, bookKeepingName, bookKeepingCover, bookkeepingPeriod, t1, t2, extraMember1, extraMember2,template,bookKeepingTypeName);
+        bookService.bookkeepingAdd(uid, bookKeepingName, bookKeepingCover, extraMember1, extraMember2,template,bookKeepingTypeName);
         return ResultBody.success("添加成功");
     }
 
@@ -142,10 +136,8 @@ public class BookController {
      *功能：修改账本设置
      */
     @RequestMapping(method = RequestMethod.PUT,value = "/change")
-    ResultBody bookkeepingChange(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,String bookkeepingCreateDate,
-                             String bookkeepingEndDate,Integer extraMember1,Integer extraMember2){
-        Timestamp t2=DateUtils.strToSqlDate(bookkeepingEndDate,"yyyy-MM-dd HH:mm:ss");
-        bookService.bookkeepingChange(uid,bookKeepingName,bookKeepingCover,bookkeepingPeriod,t2,extraMember1,extraMember2);
+    ResultBody bookkeepingChange(int uid,String bookKeepingName,String bookKeepingNameNew,String bookKeepingCover,Integer extraMember1,Integer extraMember2){
+        bookService.bookkeepingChange(uid,bookKeepingName,bookKeepingNameNew,bookKeepingCover,extraMember1,extraMember2);
         return ResultBody.success("修改成功");
     }
 
@@ -241,5 +233,16 @@ public class BookController {
         }catch (Exception e){
             throw new BizException("-1","日期格式不对,应为yyyy-MM-dd HH:mm:ss");
         }
+    }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/getBudget")
+    ResultBody getBookkeepingBudget(int uid, String bookKeepingName){
+        return ResultBody.success(bookService.getBookkeepingBudget(uid, bookKeepingName));
+    }
+
+    @RequestMapping(method = RequestMethod.PUT,value = "/changeBudget")
+    ResultBody changeBudget(int uid,String bookKeepingName,String month,String budget){
+        bookService.changeBookkeepingBudget(uid, bookKeepingName, month, budget);
+        return ResultBody.success("更新成功");
     }
 }

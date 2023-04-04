@@ -2,6 +2,7 @@ package com.demo.account.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.BasicFund;
+import com.demo.account.entity.Budget;
 import com.demo.account.entity.Income;
 import com.demo.account.entity.Payment;
 
@@ -21,17 +22,15 @@ public interface BookService {
 
     List<BasicFund> selectAllBasicFund();
 
-    String bookkeepingPayment(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, Timestamp time,
+    String bookkeepingPayment(int uid, String bookKeepingName, int accountId, String amount, Timestamp time,
                               String fundId,String customedFundId,String comment,String enclosure);
 
-    String bookkeepingIncome(int uid, String bookKeepingName, String bookKeepingTypeName, int accountId, String amount, Timestamp time,
+    String bookkeepingIncome(int uid, String bookKeepingName, int accountId, String amount, Timestamp time,
                              String fundId,String customedFundId,String comment,String enclosure);
 
-    String bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,Timestamp bookkeepingCreateDate,
-                          Timestamp bookkeepingEndDate,Integer extraMember1,Integer extraMember2,String template,String bookKeepingTypeName);
+    String bookkeepingAdd(int uid,String bookKeepingName,String bookKeepingCover,Integer extraMember1,Integer extraMember2,String template,String bookKeepingTypeName);
 
-    String bookkeepingChange(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,
-                             Timestamp bookkeepingEndDate,Integer extraMember1,Integer extraMember2);
+    String bookkeepingChange(int uid,String bookKeepingName,String bookKeepingNameNew,String bookKeepingCover,Integer extraMember1,Integer extraMember2);
 
     List<String> bookkeepingTypeNamesFind(int uid ,String bookKeepingName);
 
@@ -52,4 +51,8 @@ public interface BookService {
     HashMap<String,HashMap<String, Integer>>  countMonthPayment(int uid, String bookKeepingName,String startTime,String endTime);
 
     HashMap<String,HashMap<String, Integer>> countYearPayment(int uid, String bookKeepingName,String startTime,String endTime);
+
+    Budget getBookkeepingBudget(int uid,String bookKeepingName);
+
+    String changeBookkeepingBudget(int uid,String bookKeepingName,String month,String budget);
 }

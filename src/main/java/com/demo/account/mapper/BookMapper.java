@@ -8,7 +8,6 @@ import org.apache.ibatis.mapping.StatementType;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 
 public interface BookMapper {
 
@@ -18,9 +17,6 @@ public interface BookMapper {
             @Result(column = "bookkeeping_type_id",property = "bookkeeping_type_id"),
             @Result(column = "bookkeeping_cover",property = "bookkeeping_cover"),
             @Result(column = "bookkeeping_name",property = "bookkeeping_name"),
-            @Result(column = "bookkeeping_period",property = "bookkeeping_period"),
-            @Result(column = "bookkeeping_create_date",property = "bookkeeping_create_date"),
-            @Result(column = "bookkeeping_end_date",property = "bookkeeping_end_date"),
             @Result(column = "customed_funds_id",property = "customed_funds_id"),
             @Result(column = "extra_member1",property = "extra_member1"),
             @Result(column = "extra_member2",property = "extra_member2")
@@ -81,17 +77,16 @@ public interface BookMapper {
     @Select("SELECT bookkeeping_id FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName} AND bookkeeping_type_id=#{bookKeepingTypeId} ")
     int findBookKeepingId(int uid,String bookKeepingName,int bookKeepingTypeId);
 
-    @Insert("INSERT INTO bookkeeping(uid,bookkeeping_type_id,bookkeeping_cover,bookkeeping_name,bookkeeping_period,bookkeeping_create_date,bookkeeping_end_date,extra_member1,extra_member2)" +
-            "values(#{uid},#{bookKeepingTypeId},#{bookKeepingCover},#{bookKeepingName},#{bookkeepingPeriod},#{bookkeepingCreateDate},#{bookkeepingEndDate},#{extraMember1},#{extraMember2})")
-    int insertIntoBookKeeping(int uid,String bookKeepingName,String bookKeepingCover,String bookkeepingPeriod,Timestamp bookkeepingCreateDate,
-                              Timestamp bookkeepingEndDate,Integer extraMember1,Integer extraMember2,int bookKeepingTypeId);
+    @Insert("INSERT INTO bookkeeping(uid,bookkeeping_type_id,bookkeeping_cover,bookkeeping_name,extra_member1,extra_member2)" +
+            "values(#{uid},#{bookKeepingTypeId},#{bookKeepingCover},#{bookKeepingName},#{extraMember1},#{extraMember2})")
+    int insertIntoBookKeeping(int uid,String bookKeepingName,String bookKeepingCover,Integer extraMember1,Integer extraMember2,int bookKeepingTypeId);
 
     @Select("SELECT MAX(bookkeeping_type_id) FROM bookkeeping_tpye")
     int generalTypeId();
 
-    @Update("UPDATE bookkeeping SET bookkeeping_cover=#{bookKeepingCover},bookkeeping_period=#{bookkeepingPeriod},bookkeeping_end_date=#{bookkeepingEndDate}," +
+    @Update("UPDATE bookkeeping SET bookkeeping_name=#{bookKeepingNameNew},bookkeeping_cover=#{bookKeepingCover}," +
             "extra_member1=#{extraMember1},extra_member2=#{extraMember2} WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName}")
-    int changeBookKeeping(int uid, String bookKeepingName, String bookKeepingCover, String bookkeepingPeriod, Timestamp bookkeepingEndDate, Integer extraMember1, Integer extraMember2);
+    int changeBookKeeping(int uid, String bookKeepingName, String bookKeepingNameNew,String bookKeepingCover, Integer extraMember1, Integer extraMember2);
 
     @Insert("INSERT INTO bookkeeping_tpye(bookkeeping_type_id,bookkeeping_type_name,bookkeeping_type_funds_id)\n" +
             "VALUES(#{bookkeepingTypeId},#{bookKeepingTypeName},#{template})")
@@ -105,4 +100,5 @@ public interface BookMapper {
 
     @Select("SELECT bookkeeping_id FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName}")
     int selectBookkeepingId(int uid,String bookKeepingName);
+
 }
