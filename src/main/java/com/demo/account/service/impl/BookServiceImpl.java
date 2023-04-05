@@ -1,5 +1,6 @@
 package com.demo.account.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.account.entity.*;
 import com.demo.account.exception.BizException;
@@ -150,9 +151,11 @@ public class BookServiceImpl implements BookService {
             String fundName=bfm.get(i.getFundId());
             if (fundName!=null){
                 object.put("款项名称",fundName);
+                object.put("款项类型","基本");
             }else {
                 String customName=bookMapper.selectCustomedFundName(i.getCustomedFundId());
                 object.put("款项名称",customName);
+                object.put("款项类型","自定义");
             }
             object.put("账户名称",incomePaymentMapper.getAccountTypeName(ac.getAccountDetailType()));
             lsobject.add(object);
@@ -181,9 +184,11 @@ public class BookServiceImpl implements BookService {
             String fundName=bfm.get(i.getFundId());
             if (fundName!=null){
                 object.put("款项名称",fundName);
+                object.put("款项类型","基本");
             }else {
                 String customName=bookMapper.selectCustomedFundName(i.getCustomedFundId());
                 object.put("款项名称",customName);
+                object.put("款项类型","自定义");
             }
             object.put("账户名称",incomePaymentMapper.getAccountTypeName(ac.getAccountDetailType()));
             lsobject.add(object);
@@ -533,28 +538,109 @@ public class BookServiceImpl implements BookService {
         return bookMapper.selectUserBookkeeping(uid);
     }
 
+    private boolean monthInputCheck(String month){
+        String[] months={"jan","feb","mar","apr","may","jun","jul","aug","sept","oct","nov","dec"};
+        for (String i: months){
+            if (Objects.equals(i, month)){
+                return true;
+            }
+        }
+        return false;
+    }
     @Override
-    public Budget getBookkeepingBudget(int uid, String bookKeepingName) {
+    public JSONObject getBookkeepingBudget(int uid, String bookKeepingName,String month) {
         int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
-        return budgetMapper.selectBookkeepingBudget(bookKeepingId);
+        boolean validOrNot;
+        validOrNot=monthInputCheck(month);
+        JSONObject object=new JSONObject();
+        if (validOrNot){
+            Budget budget=budgetMapper.selectBookkeepingBudget(bookKeepingId);
+            JSONObject budgetMonth=(JSONObject) JSONObject.toJSON(budget);
+            object.put("该月预算为",budgetMonth.get(month));
+        }else {
+            throw new BizException("-1","月份的输入不正确应为jan/feb/mar/apr/may/jun/jul/aug/sept/oct/nov/dec其中之一");
+        }
+        return object;
     }
 
     @Override
     public String changeBookkeepingBudget(int uid, String bookKeepingName, String month, String budget) {
-        int bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
-        String[] months={"jan","feb","mar","apr","may","jun","jul","aug","sept","oct","nov","dec"};
-        boolean validOrNot=false;
-        for (String i: months){
-            if (Objects.equals(i, month)){
-                validOrNot=true;
-                break;
-            }
+        int bookKeepingId;
+        try{
+            bookKeepingId=bookMapper.selectBookkeepingId(uid,bookKeepingName);
+        }catch (Exception e){
+            throw new BizException("-1","没找到该账簿");
         }
+        boolean validOrNot;
+        validOrNot=monthInputCheck(month);
         if (validOrNot){
             budgetMapper.updateBudget(month,budget,bookKeepingId);
         }else {
             throw new BizException("-1","月份的输入不正确应为jan/feb/mar/apr/may/jun/jul/aug/sept/oct/nov/dec其中之一");
         }
+        return "success";
+    }
+
+    @Override
+    public List<JSONObject> getPartRecordOfIncomeAndPayment(int uid, String bookKeepingName, String classification,List<JSONObject> allPayment,List<JSONObject> allIncome) {
+        String[] ys={"餐饮","蔬菜","水果","零食"}; // 饮食大类
+        String[] yl={"通讯","社交","旅行","购物","娱乐"}; // 娱乐大类
+        String[] jt={"快递","交通"}; // 交通大类
+        String[] sh={"服饰","家庭","住房","日用","运动"}; // 生活大类
+        String[] gz={"工资","年终奖","收款"}; // 工资大类
+        String[] lc={"分红","理财"}; // 理财大类
+        String[] rq={"借入","礼金","红包"}; // 人情大类
+        String[] other={"生活费","其它","租金"}; // 其它大类
+        String[] whichClassification;
+        switch (classification){
+            case "饮食": whichClassification=ys;break;
+            case "娱乐": whichClassification=yl;break;
+            case "交通": whichClassification=jt;break;
+            case "生活": whichClassification=sh;break;
+            case "工资": whichClassification=gz;break;
+            case "理财": whichClassification=lc;break;
+            case "人情": whichClassification=rq;break;
+            case "其它": whichClassification=other;break;
+            default: throw new BizException("-1","类别输入错误可选输入有{饮食/娱乐/交通/生活/工资/理财/人情/其它}");
+        }
+        List<JSONObject> result=new ArrayList<>();
+        if (classification.equals("其它")){
+            for (JSONObject i:allPayment){
+                if (i.get("款项类型").toString().equals("自定义")){
+                    result.add(i);
+                }
+            }
+            for (JSONObject i:allIncome){
+                if (i.get("款项类型").toString().equals("自定义")){
+                    result.add(i);
+                }
+            }
+        }
+        for (JSONObject i: allPayment){
+            for (String j:whichClassification){
+                if (i.get("款项名称").toString().equals(j)){
+                    result.add(i);
+                }
+            }
+        }
+        for (JSONObject i:allIncome){
+            for (String j:whichClassification){
+                if (i.get("款项名称").toString().equals(j)){
+                    result.add(i);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String deleteBookkeeping(int uid, String bookKeepingName) {
+        try{
+            bookMapper.selectBookkeepingId(uid,bookKeepingName);
+        }catch (Exception e){
+            throw new BizException("-1","没找到该账簿");
+        }
+        bookMapper.deleteBookkeeping(uid, bookKeepingName);
         return "success";
     }
 

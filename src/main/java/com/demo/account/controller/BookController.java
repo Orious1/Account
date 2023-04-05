@@ -235,14 +235,55 @@ public class BookController {
         }
     }
 
+    /**
+     *
+     * @param uid 用户id
+     * @param bookKeepingName 账簿名称
+     * @param month 月份
+     * @return 功能是获取账簿指定月份的预算
+     */
     @RequestMapping(method = RequestMethod.GET,value = "/getBudget")
-    ResultBody getBookkeepingBudget(int uid, String bookKeepingName){
-        return ResultBody.success(bookService.getBookkeepingBudget(uid, bookKeepingName));
+    ResultBody getBookkeepingBudget(int uid, String bookKeepingName,String month){
+        return ResultBody.success(bookService.getBookkeepingBudget(uid, bookKeepingName,month));
     }
 
+    /**
+     *
+     * @param uid 用户id
+     * @param bookKeepingName 账簿名称
+     * @param month 月份
+     * @param budget 预算
+     * @return 功能是改变账簿某月的预算
+     */
     @RequestMapping(method = RequestMethod.PUT,value = "/changeBudget")
     ResultBody changeBudget(int uid,String bookKeepingName,String month,String budget){
         bookService.changeBookkeepingBudget(uid, bookKeepingName, month, budget);
         return ResultBody.success("更新成功");
+    }
+
+    /**
+     *
+     * @param uid 用户id
+     * @param bookKeepingName 账簿名称
+     * @param classification 类别
+     * @return 功能是根据几个大类查询,支出收入记录
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/getPartRecord")
+    ResultBody getPartRecordOfIncomeAndPayment(int uid,String bookKeepingName,String classification){
+        List<JSONObject> allPayment=bookService.selectBookkeepingPayment(uid,bookKeepingName);
+        List<JSONObject> allIncome=bookService.selectBookkeepingIncome(uid, bookKeepingName);
+        return ResultBody.success(bookService.getPartRecordOfIncomeAndPayment(uid,bookKeepingName,classification,allPayment,allIncome));
+    }
+
+    /**
+     *
+     * @param uid 用户id
+     * @param bookKeepingName 账簿名称
+     * @return 功能是删除指定账簿
+     */
+    @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBookkeeping")
+    ResultBody deleteBookkeeping(int uid,String bookKeepingName){
+        bookService.deleteBookkeeping(uid, bookKeepingName);
+        return ResultBody.success("删除成功");
     }
 }

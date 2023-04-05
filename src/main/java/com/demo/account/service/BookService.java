@@ -52,7 +52,11 @@ public interface BookService {
 
     HashMap<String,HashMap<String, Integer>> countYearPayment(int uid, String bookKeepingName,String startTime,String endTime);
 
-    Budget getBookkeepingBudget(int uid,String bookKeepingName);
+    JSONObject getBookkeepingBudget(int uid,String bookKeepingName,String month);
 
     String changeBookkeepingBudget(int uid,String bookKeepingName,String month,String budget);
+
+    List<JSONObject> getPartRecordOfIncomeAndPayment(int uid,String bookKeepingName,String classification,List<JSONObject> allPayment,List<JSONObject> allIncome);
+
+    String deleteBookkeeping(int uid,String bookKeepingName);
 }

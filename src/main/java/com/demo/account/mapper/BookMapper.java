@@ -101,4 +101,6 @@ public interface BookMapper {
     @Select("SELECT bookkeeping_id FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName}")
     int selectBookkeepingId(int uid,String bookKeepingName);
 
+    @Delete("DELETE FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName};")
+    int deleteBookkeeping(int uid,String bookKeepingName);
 }
