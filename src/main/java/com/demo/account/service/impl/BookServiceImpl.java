@@ -644,6 +644,14 @@ public class BookServiceImpl implements BookService {
         return "success";
     }
 
+    @Override
+    public String deleteCustomFund(String customFundId) {
+        List<String> list=bookMapper.selectAllCustomFundId();
+        if (!list.contains(customFundId)) throw new BizException("-1","自定义款项不存在");
+        bookMapper.deleteCustomFund(customFundId);
+        return "success";
+    }
+
     private HashMap<String,String> getPaymentType(int uid, String bookKeepingName, String type, String bookKeepingTypeName){
         List<BookKeeping> bookKeeping=bookMapper.selectByUidAndName(uid,bookKeepingName);
         HashMap<String,String> l=new HashMap<>();

@@ -103,4 +103,10 @@ public interface BookMapper {
 
     @Delete("DELETE FROM bookkeeping WHERE uid=#{uid} AND bookkeeping_name=#{bookKeepingName};")
     int deleteBookkeeping(int uid,String bookKeepingName);
+
+    @Delete("DELETE FROM customed_funds WHERE customed_fund_id=#{customFundId}")
+    int deleteCustomFund(String customFundId);
+
+    @Select("SELECT customed_fund_id FROM customed_funds")
+    List<String> selectAllCustomFundId();
 }

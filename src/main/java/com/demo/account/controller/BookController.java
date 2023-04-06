@@ -31,12 +31,14 @@ public class BookController {
     /**
      * @param uid 用户id
      * @param bookKeepingName 账本名
-     * @param bookKeepingTypeName 账本对应的模板名称
      * @return  List<String> 表示支出款项类型的列表
      * 功能：在”记一笔”支出页面中可以根据账本的类型渲染出对应的款项类型
      */
     @RequestMapping(method = RequestMethod.GET,value = "/out")
-    ResultBody getExpenditureType(int uid, String bookKeepingName, String bookKeepingTypeName){
+    ResultBody getExpenditureType(int uid, String bookKeepingName){
+        List<String> list=bookService.bookkeepingTypeNamesFind(uid,bookKeepingName);
+        if (list.size()==0) throw new BizException("-1","账本不存在");
+        String bookKeepingTypeName=list.get(0);
         HashMap<String,String> map=bookService.getExpenditureType(uid,bookKeepingName,bookKeepingTypeName);
         return ResultBody.success(map);
     }
@@ -44,12 +46,14 @@ public class BookController {
     /**
      * @param uid 用户id
      * @param bookKeepingName 账本名
-     * @param bookKeepingTypeName 账本对应的模板名称
      * @return List<String> 表示收入款项类型的列表
      *功能：在”记一笔”收入页面中可以根据账本的类型渲染出对应的款项类型
      */
     @RequestMapping(method = RequestMethod.GET,value = "/in")
-    ResultBody getIncomeType(int uid,String bookKeepingName,String bookKeepingTypeName){
+    ResultBody getIncomeType(int uid,String bookKeepingName){
+        List<String> list=bookService.bookkeepingTypeNamesFind(uid,bookKeepingName);
+        if (list.size()==0) throw new BizException("-1","账本不存在");
+        String bookKeepingTypeName=list.get(0);
         HashMap<String,String> map=bookService.getIncomeType(uid,bookKeepingName,bookKeepingTypeName);
         return ResultBody.success(map);
     }
@@ -58,13 +62,15 @@ public class BookController {
      *
      * @param uid 用户id
      * @param bookKeepingName 账本名
-     * @param bookKeepingTypeName 账本对应的模板名称
      * @param json 支出款项的json数据
      * @return "success"
      * 功能：修改账本模板的支出项目,用于”记一笔”支出的设置页面
      */
     @RequestMapping(method = RequestMethod.POST,value = "/setting_add_out")
-    ResultBody outSettingChange(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
+    ResultBody outSettingChange(int uid, String bookKeepingName,@RequestBody JSONObject json){
+        List<String> list=bookService.bookkeepingTypeNamesFind(uid,bookKeepingName);
+        if (list.size()==0) throw new BizException("-1","账本不存在");
+        String bookKeepingTypeName=list.get(0);
         bookService.outSettingChange(uid, bookKeepingName, bookKeepingTypeName, json);
         return ResultBody.success("设置成功");
     }
@@ -73,13 +79,15 @@ public class BookController {
      *
      * @param uid 用户id
      * @param bookKeepingName 账本名
-     * @param bookKeepingTypeName 账本对应的模板名称
      * @param json 收入款项的json数据
      * @return "success"
      * 功能：修改账本模板的收入项目,用于”记一笔”收入的设置页面
      */
     @RequestMapping(method = RequestMethod.POST,value = "/setting_add_in")
-    ResultBody inSettingChange(int uid, String bookKeepingName,String bookKeepingTypeName,@RequestBody JSONObject json){
+    ResultBody inSettingChange(int uid, String bookKeepingName,@RequestBody JSONObject json){
+        List<String> list=bookService.bookkeepingTypeNamesFind(uid,bookKeepingName);
+        if (list.size()==0) throw new BizException("-1","账本不存在");
+        String bookKeepingTypeName=list.get(0);
         bookService.inSettingChange(uid, bookKeepingName, bookKeepingTypeName, json);
         return ResultBody.success("设置成功");
     }
@@ -284,6 +292,17 @@ public class BookController {
     @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBookkeeping")
     ResultBody deleteBookkeeping(int uid,String bookKeepingName){
         bookService.deleteBookkeeping(uid, bookKeepingName);
+        return ResultBody.success("删除成功");
+    }
+
+    /**
+     *
+     * @param customFundId 自定义款项ID
+     * @return 功能是删除自定义款项
+     */
+    @RequestMapping(method = RequestMethod.DELETE,value = "/deleteCustomFund")
+    ResultBody deleteCustomFund(String customFundId){
+        bookService.deleteCustomFund(customFundId);
         return ResultBody.success("删除成功");
     }
 }

@@ -59,4 +59,6 @@ public interface BookService {
     List<JSONObject> getPartRecordOfIncomeAndPayment(int uid,String bookKeepingName,String classification,List<JSONObject> allPayment,List<JSONObject> allIncome);
 
     String deleteBookkeeping(int uid,String bookKeepingName);
+
+    String deleteCustomFund(String customFundId);
 }
